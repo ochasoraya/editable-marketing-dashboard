@@ -1,0 +1,325 @@
+
+<h2 class="sr-only">Interactive marketing performance dashboard with editable inputs and sliders for spend, CTR, CVR, and CPV, showing live-calculated ROAS and GMV charts</h2>
+
+<style>
+.dash { padding: 1rem 0; }
+.section-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 10px; }
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+.metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px 16px; }
+.metric-label { font-size: 12px; color: var(--color-text-secondary); margin: 0 0 5px; }
+.metric-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin: 0; }
+.metric-sub { font-size: 11px; color: var(--color-text-secondary); margin: 3px 0 0; }
+.metric-value.good { color: #1D9E75; }
+.metric-value.warn { color: #BA7517; }
+.metric-value.bad { color: #E24B4A; }
+.controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+.control-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
+.control-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 14px; }
+.ctrl-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.ctrl-row:last-child { margin-bottom: 0; }
+.ctrl-label { font-size: 12px; color: var(--color-text-secondary); width: 80px; flex-shrink: 0; }
+.ctrl-row input[type=range] { flex: 1; }
+.ctrl-val { font-size: 12px; font-weight: 500; color: var(--color-text-primary); min-width: 52px; text-align: right; }
+.ctrl-input { width: 80px; font-size: 12px; text-align: right; padding: 4px 8px; }
+.chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 12px; }
+.chart-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 3px; }
+.chart-sub { font-size: 11px; color: var(--color-text-secondary); margin: 0 0 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+.insight-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 12px; color: var(--color-text-secondary); margin-top: 10px; line-height: 1.6; }
+.insight-box span { color: var(--color-text-primary); font-weight: 500; }
+</style>
+
+<div class="dash">
+
+  <p class="section-label">Live metrics</p>
+  <div class="metrics-grid" id="metrics-grid"></div>
+
+  <p class="section-label">Campaign inputs</p>
+  <div class="controls-grid">
+
+    <div class="control-card">
+      <p class="control-title">TikTok Ads</p>
+      <div class="ctrl-row">
+        <span class="ctrl-label">Spend ($)</span>
+        <input type="range" min="500" max="20000" step="100" value="5800" id="tt-spend-slider">
+        <input type="number" class="ctrl-input" id="tt-spend-input" value="5800">
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">CTR (%)</span>
+        <input type="range" min="0.5" max="10" step="0.1" value="3.8" id="tt-ctr-slider">
+        <span class="ctrl-val" id="tt-ctr-val">3.8%</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">CVR (%)</span>
+        <input type="range" min="0.5" max="10" step="0.1" value="2.1" id="tt-cvr-slider">
+        <span class="ctrl-val" id="tt-cvr-val">2.1%</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">CPV ($)</span>
+        <input type="range" min="0.05" max="1" step="0.01" value="0.15" id="tt-cpv-slider">
+        <span class="ctrl-val" id="tt-cpv-val">$0.15</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">Avg AOV ($)</span>
+        <input type="range" min="10" max="300" step="1" value="85" id="tt-aov-slider">
+        <span class="ctrl-val" id="tt-aov-val">$85</span>
+      </div>
+    </div>
+
+    <div class="control-card">
+      <p class="control-title">Meta Ads</p>
+      <div class="ctrl-row">
+        <span class="ctrl-label">Spend ($)</span>
+        <input type="range" min="500" max="20000" step="100" value="3900" id="meta-spend-slider">
+        <input type="number" class="ctrl-input" id="meta-spend-input" value="3900">
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">CTR (%)</span>
+        <input type="range" min="0.5" max="10" step="0.1" value="4.4" id="meta-ctr-slider">
+        <span class="ctrl-val" id="meta-ctr-val">4.4%</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">CVR (%)</span>
+        <input type="range" min="0.5" max="10" step="0.1" value="2.4" id="meta-cvr-slider">
+        <span class="ctrl-val" id="meta-cvr-val">2.4%</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">CPV ($)</span>
+        <input type="range" min="0.05" max="1" step="0.01" value="0.18" id="meta-cpv-slider">
+        <span class="ctrl-val" id="meta-cpv-val">$0.18</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">Avg AOV ($)</span>
+        <input type="range" min="10" max="300" step="1" value="78" id="meta-aov-slider">
+        <span class="ctrl-val" id="meta-aov-val">$78</span>
+      </div>
+    </div>
+
+    <div class="control-card">
+      <p class="control-title">Google Ads</p>
+      <div class="ctrl-row">
+        <span class="ctrl-label">Spend ($)</span>
+        <input type="range" min="500" max="20000" step="100" value="2600" id="goog-spend-slider">
+        <input type="number" class="ctrl-input" id="goog-spend-input" value="2600">
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">CTR (%)</span>
+        <input type="range" min="0.5" max="10" step="0.1" value="5.6" id="goog-ctr-slider">
+        <span class="ctrl-val" id="goog-ctr-val">5.6%</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">CVR (%)</span>
+        <input type="range" min="0.5" max="10" step="0.1" value="3.1" id="goog-cvr-slider">
+        <span class="ctrl-val" id="goog-cvr-val">3.1%</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">CPV ($)</span>
+        <input type="range" min="0.05" max="1" step="0.01" value="0.22" id="goog-cpv-slider">
+        <span class="ctrl-val" id="goog-cpv-val">$0.22</span>
+      </div>
+      <div class="ctrl-row">
+        <span class="ctrl-label">Avg AOV ($)</span>
+        <input type="range" min="10" max="300" step="1" value="92" id="goog-aov-slider">
+        <span class="ctrl-val" id="goog-aov-val">$92</span>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="section-label">Performance charts</p>
+  <div class="charts-row">
+    <div class="chart-card">
+      <p class="chart-title">ROAS by channel</p>
+      <p class="chart-sub">Calculated from your inputs — updates live</p>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#378ADD"></span>TikTok</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#1D9E75"></span>Meta</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#BA7517"></span>Google</span>
+      </div>
+      <div style="position:relative;width:100%;height:180px;">
+        <canvas id="roasChart" role="img" aria-label="Bar chart showing live ROAS per channel based on inputs">Live ROAS per channel.</canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <p class="chart-title">CTR vs CVR comparison</p>
+      <p class="chart-sub">Click-through vs conversion rate (%)</p>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#378ADD"></span>CTR</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#D85A30"></span>CVR</span>
+      </div>
+      <div style="position:relative;width:100%;height:180px;">
+        <canvas id="ctrChart" role="img" aria-label="Grouped bar chart comparing CTR and CVR per channel">CTR and CVR per channel.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <p class="chart-title">GMV & spend breakdown</p>
+    <p class="chart-sub">Estimated GMV vs ad spend per channel</p>
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#378ADD"></span>TikTok GMV</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#1D9E75"></span>Meta GMV</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#BA7517"></span>Google GMV</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#888780;border-radius:50%"></span>Spend</span>
+    </div>
+    <div style="position:relative;width:100%;height:180px;">
+      <canvas id="gmvChart" role="img" aria-label="Grouped bar chart comparing estimated GMV and spend per channel">GMV vs spend per channel.</canvas>
+    </div>
+    <div class="insight-box" id="insight-box"></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const channels = ['tt','meta','goog'];
+const colors = { tt: '#378ADD', meta: '#1D9E75', goog: '#BA7517' };
+const labels = ['TikTok Ads','Meta Ads','Google Ads'];
+
+function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+function calcChannel(ch) {
+  const spend = getVal(ch+'-spend-slider');
+  const ctr = getVal(ch+'-ctr-slider');
+  const cvr = getVal(ch+'-cvr-slider');
+  const cpv = getVal(ch+'-cpv-slider');
+  const aov = getVal(ch+'-aov-slider');
+  const impressions = cpv > 0 ? Math.round(spend / cpv) : 0;
+  const clicks = Math.round(impressions * ctr / 100);
+  const conversions = Math.round(clicks * cvr / 100);
+  const gmv = conversions * aov;
+  const roas = spend > 0 ? gmv / spend : 0;
+  return { spend, ctr, cvr, cpv, aov, impressions, clicks, conversions, gmv, roas };
+}
+
+let roasChart, ctrChart, gmvChart;
+
+function roasColor(r) { return r >= 4 ? '#1D9E75' : r >= 2.5 ? '#BA7517' : '#E24B4A'; }
+
+function update() {
+  const tt = calcChannel('tt');
+  const meta = calcChannel('meta');
+  const goog = calcChannel('goog');
+
+  const totalSpend = tt.spend + meta.spend + goog.spend;
+  const totalGMV = tt.gmv + meta.gmv + goog.gmv;
+  const blendedROAS = totalSpend > 0 ? totalGMV / totalSpend : 0;
+  const totalConversions = tt.conversions + meta.conversions + goog.conversions;
+  const avgCTR = ((tt.ctr + meta.ctr + goog.ctr) / 3);
+  const avgCPV = ((tt.cpv + meta.cpv + goog.cpv) / 3);
+
+  const roasClass = blendedROAS >= 4 ? 'good' : blendedROAS >= 2.5 ? 'warn' : 'bad';
+
+  document.getElementById('metrics-grid').innerHTML = [
+    { label: 'Total GMV', value: '$' + totalGMV.toLocaleString('en-US', {maximumFractionDigits:0}), sub: 'estimated', cls: '' },
+    { label: 'Total ad spend', value: '$' + totalSpend.toLocaleString('en-US', {maximumFractionDigits:0}), sub: 'all channels', cls: '' },
+    { label: 'Blended ROAS', value: blendedROAS.toFixed(2) + 'x', sub: blendedROAS >= 4 ? 'strong' : blendedROAS >= 2.5 ? 'moderate' : 'needs work', cls: roasClass },
+    { label: 'Total conversions', value: totalConversions.toLocaleString(), sub: 'est. orders', cls: '' },
+    { label: 'Avg CTR', value: avgCTR.toFixed(1) + '%', sub: 'across channels', cls: '' },
+    { label: 'Avg CPV', value: '$' + avgCPV.toFixed(2), sub: 'cost per view', cls: '' },
+  ].map(m => `
+    <div class="metric">
+      <p class="metric-label">${m.label}</p>
+      <p class="metric-value ${m.cls}">${m.value}</p>
+      <p class="metric-sub">${m.sub}</p>
+    </div>
+  `).join('');
+
+  const roasData = [tt.roas, meta.roas, goog.roas];
+  const roasBg = roasData.map(r => roasColor(r));
+
+  if (roasChart) roasChart.destroy();
+  roasChart = new Chart(document.getElementById('roasChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ label: 'ROAS', data: roasData.map(v => parseFloat(v.toFixed(2))), backgroundColor: roasBg, borderRadius: 4, barThickness: 32 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { font: { size: 11 }, callback: v => v.toFixed(1)+'x' }, grid: { color: 'rgba(128,128,128,0.1)' }, min: 0 }
+      }
+    }
+  });
+
+  if (ctrChart) ctrChart.destroy();
+  ctrChart = new Chart(document.getElementById('ctrChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'CTR %', data: [tt.ctr, meta.ctr, goog.ctr].map(v => parseFloat(v.toFixed(1))), backgroundColor: '#378ADD', borderRadius: 4, barThickness: 20 },
+        { label: 'CVR %', data: [tt.cvr, meta.cvr, goog.cvr].map(v => parseFloat(v.toFixed(1))), backgroundColor: '#D85A30', borderRadius: 4, barThickness: 20 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { font: { size: 11 }, callback: v => v.toFixed(1)+'%' }, grid: { color: 'rgba(128,128,128,0.1)' }, min: 0 }
+      }
+    }
+  });
+
+  if (gmvChart) gmvChart.destroy();
+  gmvChart = new Chart(document.getElementById('gmvChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Est. GMV', data: [Math.round(tt.gmv), Math.round(meta.gmv), Math.round(goog.gmv)], backgroundColor: [colors.tt, colors.meta, colors.goog], borderRadius: 4, barThickness: 28 },
+        { label: 'Spend', data: [Math.round(tt.spend), Math.round(meta.spend), Math.round(goog.spend)], backgroundColor: '#B4B2A9', borderRadius: 4, barThickness: 28 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { font: { size: 11 }, callback: v => '$'+(v/1000).toFixed(0)+'k' }, grid: { color: 'rgba(128,128,128,0.1)' } }
+      }
+    }
+  });
+
+  const best = [{ ch: 'TikTok', r: tt.roas }, { ch: 'Meta', r: meta.roas }, { ch: 'Google', r: goog.roas }].sort((a,b) => b.r-a.r)[0];
+  const worst = [{ ch: 'TikTok', r: tt.roas }, { ch: 'Meta', r: meta.roas }, { ch: 'Google', r: goog.roas }].sort((a,b) => a.r-b.r)[0];
+  document.getElementById('insight-box').innerHTML =
+    `Best performer: <span>${best.ch}</span> at <span>${best.r.toFixed(2)}x ROAS</span> · Needs attention: <span>${worst.ch}</span> at <span>${worst.r.toFixed(2)}x ROAS</span> · Blended ROAS: <span>${blendedROAS.toFixed(2)}x</span> · Est. total GMV: <span>$${totalGMV.toLocaleString('en-US',{maximumFractionDigits:0})}</span>`;
+}
+
+channels.forEach(ch => {
+  ['spend','ctr','cvr','cpv','aov'].forEach(metric => {
+    const slider = document.getElementById(ch+'-'+metric+'-slider');
+    const valSpan = document.getElementById(ch+'-'+metric+'-val');
+    const input = document.getElementById(ch+'-'+metric+'-input');
+
+    slider.addEventListener('input', () => {
+      const v = parseFloat(slider.value);
+      if (valSpan) {
+        if (metric === 'spend') valSpan.textContent = '$'+v.toLocaleString();
+        else if (metric === 'cpv' || metric === 'aov') valSpan.textContent = '$'+v.toFixed(metric==='cpv'?2:0);
+        else valSpan.textContent = v.toFixed(1)+'%';
+      }
+      if (input) input.value = v;
+      update();
+    });
+
+    if (input) {
+      input.addEventListener('input', () => {
+        const v = parseFloat(input.value);
+        if (!isNaN(v)) { slider.value = v; update(); }
+      });
+    }
+  });
+});
+
+update();
+</script>
