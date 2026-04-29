@@ -1,127 +1,519 @@
-
-<h2 class="sr-only">Interactive marketing performance dashboard with editable inputs and sliders for spend, CTR, CVR, and CPV, showing live-calculated ROAS and GMV charts</h2>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketing Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-.dash { padding: 1rem 0; }
-.section-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 10px; }
-.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
-.metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px 16px; }
-.metric-label { font-size: 12px; color: var(--color-text-secondary); margin: 0 0 5px; }
-.metric-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin: 0; }
-.metric-sub { font-size: 11px; color: var(--color-text-secondary); margin: 3px 0 0; }
-.metric-value.good { color: #1D9E75; }
-.metric-value.warn { color: #BA7517; }
-.metric-value.bad { color: #E24B4A; }
-.controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
-.control-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
-.control-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 14px; }
-.ctrl-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-.ctrl-row:last-child { margin-bottom: 0; }
-.ctrl-label { font-size: 12px; color: var(--color-text-secondary); width: 80px; flex-shrink: 0; }
-.ctrl-row input[type=range] { flex: 1; }
-.ctrl-val { font-size: 12px; font-weight: 500; color: var(--color-text-primary); min-width: 52px; text-align: right; }
-.ctrl-input { width: 80px; font-size: 12px; text-align: right; padding: 4px 8px; }
-.chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 12px; }
-.chart-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 3px; }
-.chart-sub { font-size: 11px; color: var(--color-text-secondary); margin: 0 0 12px; }
-.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; }
-.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
-.legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-.charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
-.insight-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 12px; color: var(--color-text-secondary); margin-top: 10px; line-height: 1.6; }
-.insight-box span { color: var(--color-text-primary); font-weight: 500; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0eee8;
+    --muted: #6b6a72;
+    --accent: #c8ff00;
+    --accent2: #7c3aed;
+    --tt: #ff4d6d;
+    --meta: #3b82f6;
+    --goog: #f59e0b;
+    --good: #22d3a5;
+    --warn: #f59e0b;
+    --bad: #ff4d6d;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -40%;
+    right: -20%;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -30%;
+    left: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(200,255,0,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-left h1 {
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff 40%, rgba(255,255,255,0.4));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-left p {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  /* METRICS */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 900px) {
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 500px) {
+    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .metric {
+    background: var(--surface);
+    padding: 1.2rem 1.25rem;
+    transition: background 0.2s;
+  }
+
+  .metric:hover { background: var(--surface2); }
+
+  .metric-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .metric-value.good { color: var(--good); }
+  .metric-value.warn { color: var(--warn); }
+  .metric-value.bad { color: var(--bad); }
+
+  .metric-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 5px;
+  }
+
+  /* CONTROLS */
+  .controls-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 800px) {
+    .controls-grid { grid-template-columns: 1fr; }
+  }
+
+  .control-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    transition: border-color 0.2s;
+  }
+
+  .control-card:hover { border-color: var(--border2); }
+
+  .control-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.1rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .channel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .control-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .ctrl-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .ctrl-row:last-child { margin-bottom: 0; }
+
+  .ctrl-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    width: 70px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 2px;
+    background: var(--border2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 8px rgba(200,255,0,0.4);
+    transition: transform 0.15s;
+  }
+
+  input[type=range]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  .ctrl-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text);
+    min-width: 48px;
+    text-align: right;
+  }
+
+  .ctrl-input {
+    width: 72px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 4px 8px;
+    text-align: right;
+    outline: none;
+  }
+
+  .ctrl-input:focus { border-color: var(--accent); }
+
+  /* CHARTS */
+  .charts-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  @media (max-width: 700px) {
+    .charts-row { grid-template-columns: 1fr; }
+  }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem;
+  }
+
+  .chart-header {
+    margin-bottom: 1rem;
+  }
+
+  .chart-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 3px;
+  }
+
+  .chart-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .legend-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    width: 100%;
+    height: 180px;
+  }
+
+  /* INSIGHT BAR */
+  .insight-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+  }
+
+  .insight-bar span { color: var(--text); font-weight: 500; }
+  .insight-bar .accent { color: var(--accent); }
+  .insight-bar .bad { color: var(--bad); }
+
+  /* ANIMATIONS */
+  .metric, .control-card, .chart-card {
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .control-card:nth-child(2) { animation-delay: 0.05s; }
+  .control-card:nth-child(3) { animation-delay: 0.10s; }
 </style>
+</head>
+<body>
 
-<div class="dash">
+<div class="wrapper">
 
-  <p class="section-label">Live metrics</p>
+  <div class="header">
+    <div class="header-left">
+      <h1>Ad Performance</h1>
+      <p>Marketing Dashboard — Live Inputs</p>
+    </div>
+    <div class="live-badge">
+      <span class="live-dot"></span>
+      Live
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <p class="section-label">Live Metrics</p>
   <div class="metrics-grid" id="metrics-grid"></div>
 
-  <p class="section-label">Campaign inputs</p>
+  <!-- CONTROLS -->
+  <p class="section-label">Campaign Inputs</p>
   <div class="controls-grid">
 
     <div class="control-card">
-      <p class="control-title">TikTok Ads</p>
+      <div class="control-header">
+        <span class="channel-dot" style="background:var(--tt)"></span>
+        <span class="control-title">TikTok Ads</span>
+      </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">Spend ($)</span>
+        <span class="ctrl-label">Spend</span>
         <input type="range" min="500" max="20000" step="100" value="5800" id="tt-spend-slider">
         <input type="number" class="ctrl-input" id="tt-spend-input" value="5800">
       </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">CTR (%)</span>
+        <span class="ctrl-label">CTR %</span>
         <input type="range" min="0.5" max="10" step="0.1" value="3.8" id="tt-ctr-slider">
         <span class="ctrl-val" id="tt-ctr-val">3.8%</span>
       </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">CVR (%)</span>
+        <span class="ctrl-label">CVR %</span>
         <input type="range" min="0.5" max="10" step="0.1" value="2.1" id="tt-cvr-slider">
         <span class="ctrl-val" id="tt-cvr-val">2.1%</span>
       </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">CPV ($)</span>
+        <span class="ctrl-label">CPV $</span>
         <input type="range" min="0.05" max="1" step="0.01" value="0.15" id="tt-cpv-slider">
         <span class="ctrl-val" id="tt-cpv-val">$0.15</span>
       </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">Avg AOV ($)</span>
+        <span class="ctrl-label">Avg AOV</span>
         <input type="range" min="10" max="300" step="1" value="85" id="tt-aov-slider">
         <span class="ctrl-val" id="tt-aov-val">$85</span>
       </div>
     </div>
 
     <div class="control-card">
-      <p class="control-title">Meta Ads</p>
+      <div class="control-header">
+        <span class="channel-dot" style="background:var(--meta)"></span>
+        <span class="control-title">Meta Ads</span>
+      </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">Spend ($)</span>
+        <span class="ctrl-label">Spend</span>
         <input type="range" min="500" max="20000" step="100" value="3900" id="meta-spend-slider">
         <input type="number" class="ctrl-input" id="meta-spend-input" value="3900">
       </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">CTR (%)</span>
+        <span class="ctrl-label">CTR %</span>
         <input type="range" min="0.5" max="10" step="0.1" value="4.4" id="meta-ctr-slider">
         <span class="ctrl-val" id="meta-ctr-val">4.4%</span>
       </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">CVR (%)</span>
+        <span class="ctrl-label">CVR %</span>
         <input type="range" min="0.5" max="10" step="0.1" value="2.4" id="meta-cvr-slider">
         <span class="ctrl-val" id="meta-cvr-val">2.4%</span>
       </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">CPV ($)</span>
+        <span class="ctrl-label">CPV $</span>
         <input type="range" min="0.05" max="1" step="0.01" value="0.18" id="meta-cpv-slider">
         <span class="ctrl-val" id="meta-cpv-val">$0.18</span>
       </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">Avg AOV ($)</span>
+        <span class="ctrl-label">Avg AOV</span>
         <input type="range" min="10" max="300" step="1" value="78" id="meta-aov-slider">
         <span class="ctrl-val" id="meta-aov-val">$78</span>
       </div>
     </div>
 
     <div class="control-card">
-      <p class="control-title">Google Ads</p>
+      <div class="control-header">
+        <span class="channel-dot" style="background:var(--goog)"></span>
+        <span class="control-title">Google Ads</span>
+      </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">Spend ($)</span>
+        <span class="ctrl-label">Spend</span>
         <input type="range" min="500" max="20000" step="100" value="2600" id="goog-spend-slider">
         <input type="number" class="ctrl-input" id="goog-spend-input" value="2600">
       </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">CTR (%)</span>
+        <span class="ctrl-label">CTR %</span>
         <input type="range" min="0.5" max="10" step="0.1" value="5.6" id="goog-ctr-slider">
         <span class="ctrl-val" id="goog-ctr-val">5.6%</span>
       </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">CVR (%)</span>
+        <span class="ctrl-label">CVR %</span>
         <input type="range" min="0.5" max="10" step="0.1" value="3.1" id="goog-cvr-slider">
         <span class="ctrl-val" id="goog-cvr-val">3.1%</span>
       </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">CPV ($)</span>
+        <span class="ctrl-label">CPV $</span>
         <input type="range" min="0.05" max="1" step="0.01" value="0.22" id="goog-cpv-slider">
         <span class="ctrl-val" id="goog-cpv-val">$0.22</span>
       </div>
       <div class="ctrl-row">
-        <span class="ctrl-label">Avg AOV ($)</span>
+        <span class="ctrl-label">Avg AOV</span>
         <input type="range" min="10" max="300" step="1" value="92" id="goog-aov-slider">
         <span class="ctrl-val" id="goog-aov-val">$92</span>
       </div>
@@ -129,56 +521,74 @@
 
   </div>
 
-  <p class="section-label">Performance charts</p>
+  <!-- CHARTS -->
+  <p class="section-label">Performance Charts</p>
   <div class="charts-row">
     <div class="chart-card">
-      <p class="chart-title">ROAS by channel</p>
-      <p class="chart-sub">Calculated from your inputs — updates live</p>
+      <div class="chart-header">
+        <p class="chart-title">ROAS by Channel</p>
+        <p class="chart-sub">Updates live from inputs</p>
+      </div>
       <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#378ADD"></span>TikTok</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#1D9E75"></span>Meta</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#BA7517"></span>Google</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--tt)"></span>TikTok</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--meta)"></span>Meta</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--goog)"></span>Google</span>
       </div>
-      <div style="position:relative;width:100%;height:180px;">
-        <canvas id="roasChart" role="img" aria-label="Bar chart showing live ROAS per channel based on inputs">Live ROAS per channel.</canvas>
-      </div>
+      <div class="canvas-wrap"><canvas id="roasChart"></canvas></div>
     </div>
 
     <div class="chart-card">
-      <p class="chart-title">CTR vs CVR comparison</p>
-      <p class="chart-sub">Click-through vs conversion rate (%)</p>
+      <div class="chart-header">
+        <p class="chart-title">CTR vs CVR</p>
+        <p class="chart-sub">Click-through vs conversion rate (%)</p>
+      </div>
       <div class="legend">
-        <span class="legend-item"><span class="legend-dot" style="background:#378ADD"></span>CTR</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#D85A30"></span>CVR</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#a78bfa"></span>CTR</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span>CVR</span>
       </div>
-      <div style="position:relative;width:100%;height:180px;">
-        <canvas id="ctrChart" role="img" aria-label="Grouped bar chart comparing CTR and CVR per channel">CTR and CVR per channel.</canvas>
-      </div>
+      <div class="canvas-wrap"><canvas id="ctrChart"></canvas></div>
     </div>
   </div>
 
-  <div class="chart-card">
-    <p class="chart-title">GMV & spend breakdown</p>
-    <p class="chart-sub">Estimated GMV vs ad spend per channel</p>
+  <div class="chart-card" style="margin-bottom:12px">
+    <div class="chart-header">
+      <p class="chart-title">GMV vs Spend Breakdown</p>
+      <p class="chart-sub">Estimated revenue vs cost per channel</p>
+    </div>
     <div class="legend">
-      <span class="legend-item"><span class="legend-dot" style="background:#378ADD"></span>TikTok GMV</span>
-      <span class="legend-item"><span class="legend-dot" style="background:#1D9E75"></span>Meta GMV</span>
-      <span class="legend-item"><span class="legend-dot" style="background:#BA7517"></span>Google GMV</span>
-      <span class="legend-item"><span class="legend-dot" style="background:#888780;border-radius:50%"></span>Spend</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--tt)"></span>TikTok GMV</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--meta)"></span>Meta GMV</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--goog)"></span>Google GMV</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#3f3f4e;border-radius:50%"></span>Spend</span>
     </div>
-    <div style="position:relative;width:100%;height:180px;">
-      <canvas id="gmvChart" role="img" aria-label="Grouped bar chart comparing estimated GMV and spend per channel">GMV vs spend per channel.</canvas>
-    </div>
-    <div class="insight-box" id="insight-box"></div>
+    <div class="canvas-wrap" style="height:200px"><canvas id="gmvChart"></canvas></div>
   </div>
+
+  <div class="insight-bar" id="insight-box"></div>
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const channels = ['tt','meta','goog'];
-const colors = { tt: '#378ADD', meta: '#1D9E75', goog: '#BA7517' };
 const labels = ['TikTok Ads','Meta Ads','Google Ads'];
+const colorsMap = { tt: '#ff4d6d', meta: '#3b82f6', goog: '#f59e0b' };
+const chartDefaults = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: {
+      ticks: { font: { size: 10, family: 'DM Mono' }, color: '#6b6a72' },
+      grid: { display: false },
+      border: { display: false }
+    },
+    y: {
+      ticks: { font: { size: 10, family: 'DM Mono' }, color: '#6b6a72' },
+      grid: { color: 'rgba(255,255,255,0.04)' },
+      border: { display: false }
+    }
+  }
+};
 
 function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
 
@@ -196,9 +606,9 @@ function calcChannel(ch) {
   return { spend, ctr, cvr, cpv, aov, impressions, clicks, conversions, gmv, roas };
 }
 
-let roasChart, ctrChart, gmvChart;
+function roasColor(r) { return r >= 4 ? '#22d3a5' : r >= 2.5 ? '#f59e0b' : '#ff4d6d'; }
 
-function roasColor(r) { return r >= 4 ? '#1D9E75' : r >= 2.5 ? '#BA7517' : '#E24B4A'; }
+let roasChart, ctrChart, gmvChart;
 
 function update() {
   const tt = calcChannel('tt');
@@ -209,42 +619,47 @@ function update() {
   const totalGMV = tt.gmv + meta.gmv + goog.gmv;
   const blendedROAS = totalSpend > 0 ? totalGMV / totalSpend : 0;
   const totalConversions = tt.conversions + meta.conversions + goog.conversions;
-  const avgCTR = ((tt.ctr + meta.ctr + goog.ctr) / 3);
-  const avgCPV = ((tt.cpv + meta.cpv + goog.cpv) / 3);
-
+  const avgCTR = (tt.ctr + meta.ctr + goog.ctr) / 3;
+  const avgCPV = (tt.cpv + meta.cpv + goog.cpv) / 3;
   const roasClass = blendedROAS >= 4 ? 'good' : blendedROAS >= 2.5 ? 'warn' : 'bad';
 
-  document.getElementById('metrics-grid').innerHTML = [
+  const metricsData = [
     { label: 'Total GMV', value: '$' + totalGMV.toLocaleString('en-US', {maximumFractionDigits:0}), sub: 'estimated', cls: '' },
-    { label: 'Total ad spend', value: '$' + totalSpend.toLocaleString('en-US', {maximumFractionDigits:0}), sub: 'all channels', cls: '' },
+    { label: 'Total Spend', value: '$' + totalSpend.toLocaleString('en-US', {maximumFractionDigits:0}), sub: 'all channels', cls: '' },
     { label: 'Blended ROAS', value: blendedROAS.toFixed(2) + 'x', sub: blendedROAS >= 4 ? 'strong' : blendedROAS >= 2.5 ? 'moderate' : 'needs work', cls: roasClass },
-    { label: 'Total conversions', value: totalConversions.toLocaleString(), sub: 'est. orders', cls: '' },
+    { label: 'Conversions', value: totalConversions.toLocaleString(), sub: 'est. orders', cls: '' },
     { label: 'Avg CTR', value: avgCTR.toFixed(1) + '%', sub: 'across channels', cls: '' },
     { label: 'Avg CPV', value: '$' + avgCPV.toFixed(2), sub: 'cost per view', cls: '' },
-  ].map(m => `
-    <div class="metric">
+  ];
+
+  document.getElementById('metrics-grid').innerHTML = metricsData.map((m, i) =>
+    `<div class="metric" style="animation-delay:${i*0.05}s">
       <p class="metric-label">${m.label}</p>
       <p class="metric-value ${m.cls}">${m.value}</p>
       <p class="metric-sub">${m.sub}</p>
-    </div>
-  `).join('');
+    </div>`
+  ).join('');
 
   const roasData = [tt.roas, meta.roas, goog.roas];
-  const roasBg = roasData.map(r => roasColor(r));
 
   if (roasChart) roasChart.destroy();
   roasChart = new Chart(document.getElementById('roasChart'), {
     type: 'bar',
     data: {
       labels,
-      datasets: [{ label: 'ROAS', data: roasData.map(v => parseFloat(v.toFixed(2))), backgroundColor: roasBg, borderRadius: 4, barThickness: 32 }]
+      datasets: [{
+        label: 'ROAS',
+        data: roasData.map(v => parseFloat(v.toFixed(2))),
+        backgroundColor: roasData.map(r => roasColor(r)),
+        borderRadius: 6,
+        barThickness: 32
+      }]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      ...chartDefaults,
       scales: {
-        x: { ticks: { font: { size: 11 } }, grid: { display: false } },
-        y: { ticks: { font: { size: 11 }, callback: v => v.toFixed(1)+'x' }, grid: { color: 'rgba(128,128,128,0.1)' }, min: 0 }
+        ...chartDefaults.scales,
+        y: { ...chartDefaults.scales.y, ticks: { ...chartDefaults.scales.y.ticks, callback: v => v.toFixed(1)+'x' }, min: 0 }
       }
     }
   });
@@ -255,16 +670,15 @@ function update() {
     data: {
       labels,
       datasets: [
-        { label: 'CTR %', data: [tt.ctr, meta.ctr, goog.ctr].map(v => parseFloat(v.toFixed(1))), backgroundColor: '#378ADD', borderRadius: 4, barThickness: 20 },
-        { label: 'CVR %', data: [tt.cvr, meta.cvr, goog.cvr].map(v => parseFloat(v.toFixed(1))), backgroundColor: '#D85A30', borderRadius: 4, barThickness: 20 },
+        { label: 'CTR %', data: [tt.ctr, meta.ctr, goog.ctr].map(v => parseFloat(v.toFixed(1))), backgroundColor: '#a78bfa', borderRadius: 6, barThickness: 20 },
+        { label: 'CVR %', data: [tt.cvr, meta.cvr, goog.cvr].map(v => parseFloat(v.toFixed(1))), backgroundColor: '#c8ff00', borderRadius: 6, barThickness: 20 },
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      ...chartDefaults,
       scales: {
-        x: { ticks: { font: { size: 11 } }, grid: { display: false } },
-        y: { ticks: { font: { size: 11 }, callback: v => v.toFixed(1)+'%' }, grid: { color: 'rgba(128,128,128,0.1)' }, min: 0 }
+        ...chartDefaults.scales,
+        y: { ...chartDefaults.scales.y, ticks: { ...chartDefaults.scales.y.ticks, callback: v => v.toFixed(1)+'%' }, min: 0 }
       }
     }
   });
@@ -275,24 +689,23 @@ function update() {
     data: {
       labels,
       datasets: [
-        { label: 'Est. GMV', data: [Math.round(tt.gmv), Math.round(meta.gmv), Math.round(goog.gmv)], backgroundColor: [colors.tt, colors.meta, colors.goog], borderRadius: 4, barThickness: 28 },
-        { label: 'Spend', data: [Math.round(tt.spend), Math.round(meta.spend), Math.round(goog.spend)], backgroundColor: '#B4B2A9', borderRadius: 4, barThickness: 28 },
+        { label: 'Est. GMV', data: [Math.round(tt.gmv), Math.round(meta.gmv), Math.round(goog.gmv)], backgroundColor: [colorsMap.tt, colorsMap.meta, colorsMap.goog], borderRadius: 6, barThickness: 28 },
+        { label: 'Spend', data: [Math.round(tt.spend), Math.round(meta.spend), Math.round(goog.spend)], backgroundColor: '#3f3f4e', borderRadius: 6, barThickness: 28 },
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      ...chartDefaults,
       scales: {
-        x: { ticks: { font: { size: 11 } }, grid: { display: false } },
-        y: { ticks: { font: { size: 11 }, callback: v => '$'+(v/1000).toFixed(0)+'k' }, grid: { color: 'rgba(128,128,128,0.1)' } }
+        ...chartDefaults.scales,
+        y: { ...chartDefaults.scales.y, ticks: { ...chartDefaults.scales.y.ticks, callback: v => '$'+(v/1000).toFixed(0)+'k' } }
       }
     }
   });
 
-  const best = [{ ch: 'TikTok', r: tt.roas }, { ch: 'Meta', r: meta.roas }, { ch: 'Google', r: goog.roas }].sort((a,b) => b.r-a.r)[0];
-  const worst = [{ ch: 'TikTok', r: tt.roas }, { ch: 'Meta', r: meta.roas }, { ch: 'Google', r: goog.roas }].sort((a,b) => a.r-b.r)[0];
+  const sorted = [{ ch: 'TikTok', r: tt.roas }, { ch: 'Meta', r: meta.roas }, { ch: 'Google', r: goog.roas }].sort((a,b) => b.r-a.r);
+  const best = sorted[0], worst = sorted[2];
   document.getElementById('insight-box').innerHTML =
-    `Best performer: <span>${best.ch}</span> at <span>${best.r.toFixed(2)}x ROAS</span> · Needs attention: <span>${worst.ch}</span> at <span>${worst.r.toFixed(2)}x ROAS</span> · Blended ROAS: <span>${blendedROAS.toFixed(2)}x</span> · Est. total GMV: <span>$${totalGMV.toLocaleString('en-US',{maximumFractionDigits:0})}</span>`;
+    `Best performer: <span>${best.ch}</span> at <span class="accent">${best.r.toFixed(2)}x ROAS</span> &nbsp;·&nbsp; Needs attention: <span>${worst.ch}</span> at <span class="bad">${worst.r.toFixed(2)}x ROAS</span> &nbsp;·&nbsp; Blended ROAS: <span>${blendedROAS.toFixed(2)}x</span> &nbsp;·&nbsp; Est. GMV: <span>$${totalGMV.toLocaleString('en-US',{maximumFractionDigits:0})}</span>`;
 }
 
 channels.forEach(ch => {
@@ -304,8 +717,9 @@ channels.forEach(ch => {
     slider.addEventListener('input', () => {
       const v = parseFloat(slider.value);
       if (valSpan) {
-        if (metric === 'spend') valSpan.textContent = '$'+v.toLocaleString();
-        else if (metric === 'cpv' || metric === 'aov') valSpan.textContent = '$'+v.toFixed(metric==='cpv'?2:0);
+        if (metric === 'cpv') valSpan.textContent = '$'+v.toFixed(2);
+        else if (metric === 'aov') valSpan.textContent = '$'+v.toFixed(0);
+        else if (metric === 'spend') valSpan.textContent = '$'+v.toLocaleString();
         else valSpan.textContent = v.toFixed(1)+'%';
       }
       if (input) input.value = v;
@@ -323,3 +737,5 @@ channels.forEach(ch => {
 
 update();
 </script>
+</body>
+</html>
